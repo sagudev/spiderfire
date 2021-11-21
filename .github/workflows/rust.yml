@@ -70,7 +70,7 @@ jobs:
           ccache cargo build --target ${{ matrix.target }}
           ccache cargo test
           mkdir dist
-          mv ./target/*/spiderfire ./dist/spiderfire
+          mv ./target/debug/deps/spiderfire-* ./dist/spiderfire
           7z a -ttar -so -an ./dist | 7z a -si ./spiderfire-${{ steps.version.outputs.VERSION }}-${{ matrix.target }}.tar.gz
       - name: Windows
         if: startsWith(matrix.os, 'windows')
@@ -89,7 +89,7 @@ jobs:
           cargo build --target ${{ matrix.target }}
           cargo test
           mkdir dist
-          move ./target/debug/*/spiderfire.exe ./dist/spiderfire.exe
+          move ./target/debug/deps/spiderfire-* ./dist/spiderfire.exe
           7z a -ttar -so -an ./dist | 7z a -si ./spiderfire-${{ steps.version.outputs.VERSION }}-${{ matrix.target }}.tar.gz
 
       - name: Upload Zip
