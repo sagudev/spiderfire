@@ -26,8 +26,15 @@ jobs:
         id: version
         shell: bash
         run: |
-          echo "using commit ${GITHUB_SHA:10}"
-          echo ::set-output name=version::"${GITHUB_SHA:10}"
+          echo "using commit ${GITHUB_SHA:0:7}"
+          echo ::set-output name=version::"${GITHUB_SHA:0:7}"
+
+      - name: ccache cache files
+        if: startsWith(matrix.os, 'windows') != true
+        uses: actions/cache@v1.1.0
+        with:
+          path: .ccache
+          key: ${{ runner.os }}
 
       - name: Install dependencies on OS X
         if: startsWith(matrix.os, 'macOS')
@@ -60,8 +67,8 @@ jobs:
           CC: "clang"
           CXX: "clang++"
         run: |
-          cargo build --release --target ${{ matrix.target }}
-          cargo test
+          ccache cargo build --target ${{ matrix.target }}
+          ccache cargo test
           mkdir dist
           mv ./target/${{ matrix.target }}/release/spiderfire ./dist/spiderfire
           7z a -ttar -so -an ./dist | 7z a -si ./spiderfire-${{ steps.version.outputs.VERSION }}-${{ matrix.target }}.tar.gz
@@ -79,7 +86,7 @@ jobs:
           LIBCLANG_PATH: "C:\\ProgramData\\scoop\\apps\\llvm\\current\\lib"
           CARGO_HOME: ${{ github.workspace }}\..\.cargo
         run: |
-          cargo build --release --target ${{ matrix.target }}
+          cargo build --target ${{ matrix.target }}
           cargo test
           mkdir dist
           mv ./target/${{ matrix.target }}/release/spiderfire.exe ./dist/spiderfire.exe
@@ -100,8 +107,8 @@ jobs:
         id: version
         shell: bash
         run: |
-          echo "using commit ${GITHUB_SHA:10}"
-          echo ::set-output name=version::"${GITHUB_SHA:10}"
+          echo "using commit ${GITHUB_SHA:0:7}"
+          echo ::set-output name=version::"${GITHUB_SHA:0:7}"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -124,17 +131,7 @@ jobs:
       - name: Download tarball
         uses: actions/download-artifact@v1
         with:
-          name: i686-unknown-linux-gnu
-
-      - name: Download tarball
-        uses: actions/download-artifact@v1
-        with:
           name: x86_64-pc-windows-msvc
-
-      - name: Download tarball
-        uses: actions/download-artifact@v1
-        with:
-          name: i686-pc-windows-msvc
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -145,6 +142,4 @@ jobs:
           files: |
             ./x86_64-apple-darwin/spiderfire-${{ steps.version.outputs.VERSION }}-x86_64-apple-darwin.tar.gz
             ./x86_64-unknown-linux-gnu/spiderfire-${{ steps.version.outputs.VERSION }}-x86_64-unknown-linux-gnu.tar.gz
-            ./i686-unknown-linux-gnu/spiderfire-${{ steps.version.outputs.VERSION }}-i686-unknown-linux-gnu.tar.gz
             ./x86_64-pc-windows-msvc/spiderfire-${{ steps.version.outputs.VERSION }}-x86_64-pc-windows-msvc.tar.gz
-            ./i686-pc-windows-msvc/spiderfire-${{ steps.version.outputs.VERSION }}-i686-pc-windows-msvc.tar.gz
