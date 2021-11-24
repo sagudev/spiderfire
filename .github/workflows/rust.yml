@@ -96,7 +96,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: ${{ matrix.target }}
-          path: ./spiderfire-${{ steps.version.outputs.VERSION }}-${{ matrix.target }}
+          path: ./spiderfire-${{ steps.version.outputs.VERSION }}-${{ matrix.target }}.tar.gz
 
   release:
     name: GitHub Release
