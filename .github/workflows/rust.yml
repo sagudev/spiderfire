@@ -109,14 +109,6 @@ jobs:
         run: |
           echo "using commit ${GITHUB_SHA:0:7}"
           echo ::set-output name=version::"${GITHUB_SHA:0:7}"
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.version.outputs.VERSION }}
-          release_name: ${{ steps.version.outputs.VERSION }}
 
       - name: Download tarball
         uses: actions/download-artifact@v1
@@ -135,10 +127,11 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          name: ${{ steps.version.outputs.VERSION }}
+          prerelease: true
           files: |
             ./x86_64-apple-darwin/spiderfire-${{ steps.version.outputs.VERSION }}-x86_64-apple-darwin.tar.gz
             ./x86_64-unknown-linux-gnu/spiderfire-${{ steps.version.outputs.VERSION }}-x86_64-unknown-linux-gnu.tar.gz
