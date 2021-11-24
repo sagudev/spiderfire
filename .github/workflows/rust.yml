@@ -31,9 +31,9 @@ jobs:
 
       - name: ccache cache files
         if: startsWith(matrix.os, 'windows') != true
-        uses: actions/cache@v1.1.0
+        uses: actions/cache@v2
         with:
-          path: .ccache
+          path: ~/.ccache
           key: ${{ runner.os }}
 
       - name: Install dependencies on OS X
