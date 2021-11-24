@@ -21,14 +21,6 @@ jobs:
             target: x86_64-pc-windows-msvc
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Query version number
-        id: version
-        shell: bash
-        run: |
-          echo "using commit ${GITHUB_SHA:0:7}"
-          echo ::set-output name=version::"${GITHUB_SHA:0:7}"
-
       - name: ccache cache files
         if: startsWith(matrix.os, 'windows') != true
         uses: actions/cache@v2
@@ -67,11 +59,13 @@ jobs:
           CC: "clang"
           CXX: "clang++"
         run: |
+          ccache -z
           ccache cargo build --target ${{ matrix.target }}
           ccache cargo test
+          ccache -s
           mkdir dist
           mv ./target/${{ matrix.target }}/debug/cli ./dist/spiderfire
-          7z a -ttar -so -an ./dist | 7z a -si ./spiderfire-${{ steps.version.outputs.VERSION }}-${{ matrix.target }}.tar.gz
+          zip -r ./spiderfire.zip ./dist/spiderfire
       - name: Windows
         if: startsWith(matrix.os, 'windows')
         shell: cmd
@@ -90,49 +84,16 @@ jobs:
           cargo test
           mkdir dist
           move ./target/${{ matrix.target }}/debug/cli.exe ./dist/spiderfire.exe
-          7z a -ttar -so -an ./dist | 7z a -si ./spiderfire-${{ steps.version.outputs.VERSION }}-${{ matrix.target }}.tar.gz
-
-      - name: Upload Zip
-        uses: actions/upload-artifact@v1
-        with:
-          name: ${{ matrix.target }}
-          path: ./spiderfire-${{ steps.version.outputs.VERSION }}-${{ matrix.target }}.tar.gz
-
-  release:
-    name: GitHub Release
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Query version number
-        id: version
-        shell: bash
-        run: |
-          echo "using commit ${GITHUB_SHA:0:7}"
-          echo ::set-output name=version::"${GITHUB_SHA:0:7}"
-
-      - name: Download tarball
-        uses: actions/download-artifact@v1
-        with:
-          name: x86_64-apple-darwin
-
-      - name: Download tarball
-        uses: actions/download-artifact@v1
-        with:
-          name: x86_64-unknown-linux-gnu
-
-      - name: Download tarball
-        uses: actions/download-artifact@v1
-        with:
-          name: x86_64-pc-windows-msvc
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
+          zip -r ./spiderfire.zip ./dist/spiderfire
+      
+      - name: Deploy
+        uses: WebFreak001/deploy-nightly@v1.1.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
         with:
-          name: ${{ steps.version.outputs.VERSION }}
-          prerelease: true
-          files: |
-            ./x86_64-apple-darwin/spiderfire-${{ steps.version.outputs.VERSION }}-x86_64-apple-darwin.tar.gz
-            ./x86_64-unknown-linux-gnu/spiderfire-${{ steps.version.outputs.VERSION }}-x86_64-unknown-linux-gnu.tar.gz
-            ./x86_64-pc-windows-msvc/spiderfire-${{ steps.version.outputs.VERSION }}-x86_64-pc-windows-msvc.tar.gz
+          upload_url: https://uploads.github.com/repos/sagudev/spiderfire/releases/54020897/assets{?name,label}
+          release_id: 54020897
+          asset_path: ./spiderfire.zip # path to archive to upload
+          asset_name: spiderfire-${{ matrix.target }}-$$.zip # $$ is replaced with (YYYYMMDD) and 6 letter commit hash
+          asset_content_type: application/zip
+          max_releases: 7
