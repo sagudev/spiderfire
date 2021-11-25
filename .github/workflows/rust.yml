@@ -85,7 +85,7 @@ jobs:
           cargo test
           mkdir dist
           move ./target/${{ matrix.target }}/debug/cli.exe ./dist/spiderfire.exe
-          zip -r ./spiderfire.zip ./dist/spiderfire
+          tar.exe -a -c -f spiderfire.zip ./dist/spiderfire.exe
       
       - name: Deploy
         uses: WebFreak001/deploy-nightly@v1.1.0
