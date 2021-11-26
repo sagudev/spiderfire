@@ -83,9 +83,7 @@ jobs:
         run: |
           cargo build --target ${{ matrix.target }}
           cargo test
-          mkdir dist
-          move ./target/${{ matrix.target }}/debug/cli.exe ./dist/spiderfire.exe
-          tar.exe -a -c -f spiderfire.zip ./dist/spiderfire.exe
+          tar.exe -a -c -f spiderfire.zip ./target/${{ matrix.target }}/debug/cli.exe
       
       - name: Deploy
         uses: WebFreak001/deploy-nightly@v1.1.0
