@@ -114,8 +114,8 @@ jobs:
           CXX: clang++
           RUSTC_WRAPPER: sccache
         run: |
-          just build-release -vv
-          just test-release -vv
+          just build-release -vvv
+          just test-release -vvv
           mv ./target/release/cli ./target/release/spiderfire
           strip ./target/release/spiderfire
 
@@ -133,8 +133,8 @@ jobs:
           PYTHON3: C:\mozilla-build\python3\python3.exe
           LIBCLANG_PATH: C:\ProgramData\scoop\apps\llvm\current\lib
         run: |
-          just build-release -vv
-          just test-release -vv
+          just build-release -vvv
+          just test-release -vvv
           rename .\target\release\cli.exe spiderfire.exe
 
       - name: Stop sccache Server
